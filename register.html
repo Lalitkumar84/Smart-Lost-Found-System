@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create account | FindIt</title>
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <main class="auth-page">
+    <a class="logo" href="index.html">Find<span>It</span></a>
+
+    <section class="auth-card">
+      <h1>Create your account</h1>
+      <p class="subtitle">Join your community and help reunite people with their belongings.</p>
+
+      <form id="register-form">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" autocomplete="name" required />
+
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+
+        <label for="password">Password (at least 8 characters)</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+
+        <label for="confirmPassword">Confirm password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required />
+
+        <button type="submit">Create account</button>
+      </form>
+
+      <p class="switch-page">Already have an account? <a href="login.html">Log in</a></p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

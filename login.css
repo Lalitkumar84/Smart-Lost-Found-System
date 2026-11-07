@@ -1,0 +1,125 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #fbfaf6;
+  color: #1f302d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.auth-page {
+  width: min(100% - 32px, 440px);
+}
+
+.logo {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 24px;
+  color: #1f302d;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  text-decoration: none;
+}
+
+.logo span {
+  color: #23765f;
+}
+
+.auth-card {
+  padding: 36px;
+  border: 1px solid #e3eae6;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 14px 40px rgba(31, 48, 45, 0.07);
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.8px;
+}
+
+.subtitle {
+  margin: 10px 0 26px;
+  color: #71807c;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid #e3eae6;
+  border-radius: 7px;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+}
+
+input:focus {
+  border-color: #23765f;
+  box-shadow: 0 0 0 3px rgba(35, 118, 95, 0.12);
+}
+
+button {
+  min-height: 48px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 7px;
+  background: #23765f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #185b49;
+}
+
+#login-message {
+  margin: 8px 0 0;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.switch-page {
+  margin: 22px 0 0;
+  color: #71807c;
+  text-align: center;
+  font-size: 13px;
+}
+
+.switch-page a {
+  color: #23765f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.switch-page a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 26px 22px;
+  }
+}
