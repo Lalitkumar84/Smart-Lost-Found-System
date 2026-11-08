@@ -11,13 +11,37 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-if (!process.env.MONGODB_URI || !JWT_SECRET || JWT_SECRET.length < 32) {
-  console.error("Set MONGODB_URI and a JWT_SECRET of at least 32 characters in .env");
-  process.exit(1);
+function validateConfig() {
+  if (!process.env.MONGODB_URI || !JWT_SECRET || JWT_SECRET.length < 32) {
+    throw new Error("Set MONGODB_URI and a JWT_SECRET of at least 32 characters.");
+  }
 }
 
 app.use(express.json({ limit: "2mb" }));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "public")));
+
+let dbConnection;
+async function connectDatabase() {
+  if (mongoose.connection.readyState === 1) return;
+  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is not configured.");
+  if (!dbConnection) {
+    dbConnection = mongoose.connect(process.env.MONGODB_URI).catch((error) => {
+      dbConnection = null;
+      throw error;
+    });
+  }
+  await dbConnection;
+}
+
+app.use("/api", async (req, res, next) => {
+  try {
+    validateConfig();
+    await connectDatabase();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true, maxlength: 80 },
@@ -152,7 +176,8 @@ app.use((error, req, res, next) => {
 
 async function start() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    validateConfig();
+    await connectDatabase();
     console.log("Connected to MongoDB");
     app.listen(PORT, "0.0.0.0", () => console.log(`FindIt is running at http://localhost:${PORT}`));
   } catch (error) {
@@ -161,4 +186,8 @@ async function start() {
   }
 }
 
-start();
+module.exports = app;
+
+if (!process.env.VERCEL) {
+  start();
+}

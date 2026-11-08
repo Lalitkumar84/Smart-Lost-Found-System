@@ -84,3 +84,17 @@ The Express server serves both the pages and the API, so deploy this as one Rend
 6. Click **Deploy**. When the deploy finishes, open the Render `onrender.com` URL, create an account, and submit a report. Confirm the report appears in Atlas Data Explorer under `smart_lost_found` → `items`.
 
 Render's free service may sleep when idle and take longer to respond on the next visit. See Render's current [Web Services documentation](https://render.com/docs/web-services) and [environment variable guide](https://render.com/docs/configure-environment-variables) for current plan and deployment details.
+
+## Deploy on Vercel
+
+Vercel supports Express apps and serves files in `public/` as static assets. This project keeps `server.js` at the repository root and the website files under `public/` for that deployment layout.
+
+1. Push the latest project files to GitHub.
+2. In Vercel, choose **Add New → Project**, import `Smart-Lost-Found-System`, and deploy. Vercel should detect Express automatically; no build command or output directory is needed.
+3. In the Vercel project settings, add these environment variables for Production (and Preview if you want preview deployments to connect too):
+   - `MONGODB_URI` — the MongoDB Atlas connection string.
+   - `JWT_SECRET` — a long random secret, at least 32 characters.
+4. Atlas must allow connections from the Vercel service. Vercel's default function egress uses dynamic IPs. Static outbound IPs are available on Pro and Enterprise plans; if enabled, add the Vercel-provided IPs to Atlas **Network Access**. Do not use `0.0.0.0/0` to avoid allowlisting.
+5. Redeploy after setting environment variables. Open the Vercel URL and try registration, login, and a report.
+
+Vercel's current [Express deployment guide](https://vercel.com/kb/guide/ship-a-express-app-on-vercel) explains automatic detection, and its [static IP announcement](https://vercel.com/changelog/static-ips-are-now-available-for-more-secure-connectivity) describes plan availability. For a free Atlas project without a fixed Vercel egress IP, Render is the simpler hosting option because you can add its outbound IP ranges to Atlas.
