@@ -134,6 +134,7 @@ function setupWelcomeMessage() {
 function makeItemCard(item, options = {}) {
   const card = document.createElement("article");
   card.className = "item-card";
+  card.dataset.itemId = item.id;
   card._itemData = item;
   if (!options.manage) {
     card.classList.add("clickable-item-card");
@@ -289,6 +290,42 @@ function openItemDetails(item) {
   });
 
   details.append(type, title, info, descriptionHeading, description);
+
+  if (item.isOwner && item.status !== "Resolved") {
+    const resolveButton = document.createElement("button");
+    resolveButton.className = "button item-detail-resolve";
+    resolveButton.type = "button";
+    resolveButton.textContent = item.type === "lost" ? "I got my item back" : "This item was claimed";
+    resolveButton.addEventListener("click", async () => {
+      resolveButton.disabled = true;
+      try {
+        await apiRequest(`/api/items/${encodeURIComponent(item.id)}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: "Resolved" })
+        });
+        item.status = "Resolved";
+        item.isOwner = false;
+        resolveButton.textContent = "Marked as resolved";
+        const note = document.createElement("p");
+        note.className = "item-resolved-note";
+        note.textContent = "This report is now hidden from other people’s searches. You can still see it in My Reports.";
+        resolveButton.after(note);
+        document.querySelectorAll(`.item-card[data-item-id="${CSS.escape(item.id)}"]`).forEach((card) => card.remove());
+        await Promise.all([loadItems(), loadAllReports(), loadMyReports()]);
+      } catch (error) {
+        resolveButton.disabled = false;
+        let note = dialog.querySelector(".item-resolved-note");
+        if (!note) {
+          note = document.createElement("p");
+          note.className = "item-resolved-note is-error";
+          resolveButton.after(note);
+        }
+        note.textContent = error.message;
+      }
+    });
+    details.appendChild(resolveButton);
+  }
+
   content.append(visual, details);
   if (!dialog.open) dialog.showModal();
 }

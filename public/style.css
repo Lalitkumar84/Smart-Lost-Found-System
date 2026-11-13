@@ -684,6 +684,20 @@ a {
   font-weight: 700;
 }
 
+.item-detail-resolve {
+  margin-top: 22px;
+}
+
+.item-resolved-note {
+  margin-top: 14px;
+  color: var(--green-dark);
+  line-height: 1.5;
+}
+
+.item-resolved-note.is-error {
+  color: #b42318;
+}
+
 .item-image {
   position: relative;
   height: 165px;

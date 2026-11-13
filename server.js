@@ -85,6 +85,19 @@ function requireAuth(req, res, next) {
   }
 }
 
+function optionalAuth(req, res, next) {
+  const authorization = req.get("authorization") || "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+  if (token) {
+    try {
+      req.user = jwt.verify(token, JWT_SECRET);
+    } catch {
+      // Public item browsing continues when a stored token has expired.
+    }
+  }
+  next();
+}
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, database: mongoose.connection.readyState === 1 ? "connected" : "disconnected" });
 });
@@ -123,19 +136,31 @@ app.post("/api/auth/login", async (req, res, next) => {
   }
 });
 
-app.get("/api/items", async (req, res, next) => {
+app.get("/api/items", optionalAuth, async (req, res, next) => {
   try {
     const query = {};
     if (["lost", "found"].includes(req.query.type)) query.type = req.query.type;
     if (req.query.category) query.category = String(req.query.category).slice(0, 60);
-    if (req.query.status && ["Active", "Resolved"].includes(req.query.status)) query.status = req.query.status;
+    if (req.query.status === "Resolved") {
+      if (!req.user) return res.json([]);
+      query.status = "Resolved";
+      query.reportedBy = req.user.sub;
+    } else {
+      query.status = "Active";
+    }
     if (req.query.location) query.location = { $regex: String(req.query.location).slice(0, 100), $options: "i" };
     if (req.query.q) {
       const keyword = String(req.query.q).slice(0, 100).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [{ title: { $regex: keyword, $options: "i" } }, { description: { $regex: keyword, $options: "i" } }];
     }
     const items = await Item.find(query).sort({ createdAt: -1 }).limit(100).lean();
-    res.json(items.map((item) => ({ ...item, id: item._id.toString(), _id: undefined, reportedBy: undefined })));
+    res.json(items.map((item) => ({
+      ...item,
+      id: item._id.toString(),
+      isOwner: Boolean(req.user && req.user.sub === item.reportedBy.toString()),
+      _id: undefined,
+      reportedBy: undefined
+    })));
   } catch (error) {
     next(error);
   }
