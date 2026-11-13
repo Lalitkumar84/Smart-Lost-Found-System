@@ -281,12 +281,36 @@ function setupAllReportsPage() {
   if (!form) return;
 
   const readFilters = () => Object.fromEntries(new FormData(form).entries());
+  const initialFilters = new URLSearchParams(window.location.search);
+  ["q", "type", "category", "status", "location"].forEach((key) => {
+    if (initialFilters.has(key) && form.elements[key]) form.elements[key].value = initialFilters.get(key);
+  });
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     loadAllReports(readFilters());
   });
   form.addEventListener("reset", () => window.setTimeout(() => loadAllReports(), 0));
-  loadAllReports();
+  form.querySelectorAll("select").forEach((select) => {
+    select.addEventListener("change", () => loadAllReports(readFilters()));
+  });
+  loadAllReports(readFilters());
+}
+
+function setupHomeSearch() {
+  const form = document.querySelector(".search-form");
+  if (!form) return;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    const keyword = form.elements.query.value.trim();
+    const type = form.elements.type.value;
+    if (keyword) params.set("q", keyword);
+    if (type) params.set("type", type);
+    const query = params.toString();
+    window.location.href = `reports.html${query ? `?${query}` : ""}`;
+  });
 }
 
 function setupMyReports() {
@@ -390,6 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupReportForm();
   setupMyReports();
   setupAllReportsPage();
+  setupHomeSearch();
   loadItems();
   loadMyReports();
 });
