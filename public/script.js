@@ -301,8 +301,7 @@ function setupHomeSearch() {
   const form = document.querySelector(".search-form");
   if (!form) return;
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
+  const openReports = () => {
     const params = new URLSearchParams();
     const keyword = form.elements.query.value.trim();
     const type = form.elements.type.value;
@@ -310,7 +309,13 @@ function setupHomeSearch() {
     if (type) params.set("type", type);
     const query = params.toString();
     window.location.href = `reports.html${query ? `?${query}` : ""}`;
+  };
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    openReports();
   });
+  form.elements.type.addEventListener("change", openReports);
 }
 
 function setupMyReports() {
