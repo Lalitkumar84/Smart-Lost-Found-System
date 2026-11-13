@@ -841,6 +841,12 @@ a {
   background: #fff3f1;
 }
 
+.button-resolve-report {
+  border-color: var(--green);
+  background: var(--green);
+  color: white;
+}
+
 .item-title-row {
   display: flex;
   align-items: baseline;

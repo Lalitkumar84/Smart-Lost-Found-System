@@ -182,6 +182,13 @@ function makeItemCard(item, options = {}) {
   category.textContent = item.category;
   details.append(titleRow, location, description, category);
 
+  if (!options.manage && item.status === "Resolved") {
+    const resolvedStatus = document.createElement("span");
+    resolvedStatus.className = "report-status-label is-resolved";
+    resolvedStatus.textContent = "Resolved";
+    details.appendChild(resolvedStatus);
+  }
+
   if (options.manage) {
     const status = document.createElement("span");
     status.className = `report-status-label ${item.status === "Resolved" ? "is-resolved" : ""}`;
@@ -208,7 +215,16 @@ function makeItemCard(item, options = {}) {
     deleteButton.textContent = "Delete report";
     deleteButton.dataset.itemId = item.id;
 
-    actions.append(statusSelect, deleteButton);
+    actions.append(statusSelect);
+    if (item.status !== "Resolved") {
+      const resolveButton = document.createElement("button");
+      resolveButton.className = "button button-small button-resolve-report";
+      resolveButton.type = "button";
+      resolveButton.textContent = "Mark as resolved";
+      resolveButton.dataset.itemId = item.id;
+      actions.appendChild(resolveButton);
+    }
+    actions.append(deleteButton);
     details.append(status, actions);
   }
   card.append(imageArea, details);
@@ -302,7 +318,7 @@ async function loadItems() {
   const grid = document.querySelector("#item-grid");
   if (!grid) return;
   try {
-    const items = await apiRequest("/api/items");
+    const items = await apiRequest("/api/items?status=Active");
     grid.replaceChildren();
     if (!items.length) {
       const empty = document.createElement("p");
@@ -431,6 +447,23 @@ function setupMyReports() {
   });
 
   grid.addEventListener("click", async (event) => {
+    const resolveButton = event.target.closest(".button-resolve-report");
+    if (resolveButton) {
+      resolveButton.disabled = true;
+      try {
+        await apiRequest(`/api/items/${encodeURIComponent(resolveButton.dataset.itemId)}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: "Resolved" })
+        });
+        message.textContent = "Report marked resolved and removed from active reports.";
+        await Promise.all([loadMyReports(), loadItems()]);
+      } catch (error) {
+        message.textContent = error.message;
+        await loadMyReports();
+      }
+      return;
+    }
+
     const button = event.target.closest(".button-delete-report");
     if (!button) return;
     if (!window.confirm("Delete this report? This cannot be undone.")) return;
