@@ -58,7 +58,8 @@ const itemSchema = new mongoose.Schema({
   date: { type: String, required: true },
   image: { type: String, default: "", maxlength: 1500000 },
   status: { type: String, enum: ["Active", "Resolved"], default: "Active" },
-  reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  resolvedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
@@ -213,6 +214,21 @@ app.patch("/api/items/:id/status", requireAuth, async (req, res, next) => {
     ).lean();
     if (!item) return res.status(404).json({ message: "Report not found or you do not own it." });
     res.json({ ...item, id: item._id.toString(), _id: undefined, reportedBy: undefined });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/items/:id/resolve", requireAuth, async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: "Invalid report ID." });
+    const item = await Item.findOneAndUpdate(
+      { _id: req.params.id, status: "Active" },
+      { $set: { status: "Resolved", resolvedBy: req.user.sub } },
+      { new: true, runValidators: true }
+    ).lean();
+    if (!item) return res.status(404).json({ message: "This report is already resolved or no longer available." });
+    res.json({ ...item, id: item._id.toString(), _id: undefined, reportedBy: undefined, resolvedBy: undefined });
   } catch (error) {
     next(error);
   }

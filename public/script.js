@@ -291,24 +291,21 @@ function openItemDetails(item) {
 
   details.append(type, title, info, descriptionHeading, description);
 
-  if (item.isOwner && item.status !== "Resolved") {
+  if (item.status !== "Resolved" && localStorage.getItem(TOKEN_KEY)) {
     const resolveButton = document.createElement("button");
     resolveButton.className = "button item-detail-resolve";
     resolveButton.type = "button";
-    resolveButton.textContent = item.type === "lost" ? "I got my item back" : "This item was claimed";
+    resolveButton.textContent = item.type === "lost" ? "I found my item" : "I claimed this item";
     resolveButton.addEventListener("click", async () => {
       resolveButton.disabled = true;
       try {
-        await apiRequest(`/api/items/${encodeURIComponent(item.id)}/status`, {
-          method: "PATCH",
-          body: JSON.stringify({ status: "Resolved" })
-        });
+        await apiRequest(`/api/items/${encodeURIComponent(item.id)}/resolve`, { method: "POST" });
         item.status = "Resolved";
         item.isOwner = false;
         resolveButton.textContent = "Marked as resolved";
         const note = document.createElement("p");
         note.className = "item-resolved-note";
-        note.textContent = "This report is now hidden from other people’s searches. You can still see it in My Reports.";
+        note.textContent = "This report is now hidden from other people’s searches.";
         resolveButton.after(note);
         document.querySelectorAll(`.item-card[data-item-id="${CSS.escape(item.id)}"]`).forEach((card) => card.remove());
         await Promise.all([loadItems(), loadAllReports(), loadMyReports()]);
