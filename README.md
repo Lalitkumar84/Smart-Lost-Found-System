@@ -47,6 +47,7 @@ Create an account, log in, then submit a report. User accounts and item reports 
 
 - Registration and login use Express API routes. Passwords are hashed with bcrypt; the server returns a JWT for the browser session.
 - Public reports load from `GET /api/items`.
+- The **View all reports** link opens a dedicated page with keyword, type, category, status, and location filters.
 - Creating a report sends it to `POST /api/items`; a valid login is required.
 - Logged-in users can view their own reports, change a report between Active and Resolved, or delete it. The server checks report ownership for each action.
 - Optional images up to 1 MB are stored as data in the MongoDB item document for this learning project.

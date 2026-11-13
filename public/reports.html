@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Reports | FindIt</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">Find<span>It</span></a>
+    <nav class="navigation" aria-label="Main navigation">
+      <a href="index.html#home">Home</a>
+      <a class="active" href="reports.html">All reports</a>
+      <a href="index.html#my-reports">My reports</a>
+    </nav>
+    <div class="header-actions">
+      <a class="login-link" id="auth-link" href="login.html">Log in</a>
+      <a class="button button-small" href="index.html#report-form">Report an item</a>
+    </div>
+  </header>
+
+  <main class="all-reports-page">
+    <section class="all-reports-intro">
+      <p class="eyebrow">COMMUNITY REPORTS</p>
+      <h1>All lost and found reports</h1>
+      <p>Search the community reports and filter by item type, category, status, or location.</p>
+    </section>
+
+    <form class="all-reports-filters" id="all-reports-form">
+      <label>
+        Keyword
+        <input type="search" name="q" placeholder="Search item name or details" />
+      </label>
+      <label>
+        Type
+        <select name="type">
+          <option value="">All types</option>
+          <option value="lost">Lost</option>
+          <option value="found">Found</option>
+        </select>
+      </label>
+      <label>
+        Category
+        <select name="category">
+          <option value="">All categories</option>
+          <option>Accessories</option>
+          <option>Electronics</option>
+          <option>Clothing</option>
+          <option>Keys</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label>
+        Status
+        <select name="status">
+          <option value="">All statuses</option>
+          <option>Active</option>
+          <option>Resolved</option>
+        </select>
+      </label>
+      <label>
+        Location
+        <input type="search" name="location" placeholder="Search a location" />
+      </label>
+      <button class="button" type="submit">Apply filters</button>
+      <button class="button button-outline" type="reset">Clear</button>
+    </form>
+
+    <p class="reports-message" id="all-reports-message" role="status">Loading reports…</p>
+    <div class="item-grid" id="all-reports-grid"></div>
+  </main>
+
+  <footer class="site-footer">
+    <a class="logo" href="index.html">Find<span>It</span></a>
+    <p>Helping lost things find their way home.</p>
+    <small>© 2025 FindIt Community</small>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>

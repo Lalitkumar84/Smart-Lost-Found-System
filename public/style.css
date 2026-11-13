@@ -610,6 +610,68 @@ a {
   font-size: 13px;
 }
 
+.all-reports-page {
+  max-width: 1120px;
+  min-height: 60vh;
+  margin: 60px auto 76px;
+}
+
+.all-reports-intro {
+  margin-bottom: 26px;
+}
+
+.all-reports-intro h1 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 42px);
+  letter-spacing: -1.2px;
+}
+
+.all-reports-intro > p:last-child {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.all-reports-filters {
+  margin-bottom: 22px;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--cream);
+}
+
+.all-reports-filters label {
+  display: grid;
+  gap: 7px;
+  color: #45534e;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.all-reports-filters input,
+.all-reports-filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.all-reports-filters .button {
+  min-height: 44px;
+}
+
+.all-reports-filters .button-outline {
+  background: white;
+}
+
 .report-status-label {
   display: inline-block;
   margin-top: 14px;
@@ -900,6 +962,14 @@ a {
   .quick-links,
   .item-grid {
     grid-template-columns: 1fr;
+  }
+
+  .all-reports-page {
+    margin: 40px 5% 55px;
+  }
+
+  .all-reports-filters {
+    grid-template-columns: 1fr 1fr;
   }
 
   .quick-links {

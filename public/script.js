@@ -252,6 +252,43 @@ async function loadMyReports() {
   }
 }
 
+async function loadAllReports(filters = {}) {
+  const grid = document.querySelector("#all-reports-grid");
+  const message = document.querySelector("#all-reports-message");
+  if (!grid || !message) return;
+
+  grid.replaceChildren();
+  message.textContent = "Loading reports…";
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) params.set(key, value);
+  });
+
+  try {
+    const query = params.toString();
+    const items = await apiRequest(`/api/items${query ? `?${query}` : ""}`);
+    message.textContent = items.length
+      ? `Showing ${items.length} report${items.length === 1 ? "" : "s"}.`
+      : "No reports match these filters.";
+    items.forEach((item) => grid.appendChild(makeItemCard(item)));
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+function setupAllReportsPage() {
+  const form = document.querySelector("#all-reports-form");
+  if (!form) return;
+
+  const readFilters = () => Object.fromEntries(new FormData(form).entries());
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    loadAllReports(readFilters());
+  });
+  form.addEventListener("reset", () => window.setTimeout(() => loadAllReports(), 0));
+  loadAllReports();
+}
+
 function setupMyReports() {
   const grid = document.querySelector("#my-report-grid");
   const message = document.querySelector("#my-reports-message");
@@ -352,6 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupWelcomeMessage();
   setupReportForm();
   setupMyReports();
+  setupAllReportsPage();
   loadItems();
   loadMyReports();
 });
