@@ -134,6 +134,13 @@ function setupWelcomeMessage() {
 function makeItemCard(item, options = {}) {
   const card = document.createElement("article");
   card.className = "item-card";
+  card._itemData = item;
+  if (!options.manage) {
+    card.classList.add("clickable-item-card");
+    card.tabIndex = 0;
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `View details for ${item.type} item: ${item.title}`);
+  }
 
   const imageArea = document.createElement("div");
   imageArea.className = "item-image";
@@ -206,6 +213,89 @@ function makeItemCard(item, options = {}) {
   }
   card.append(imageArea, details);
   return card;
+}
+
+function openItemDetails(item) {
+  let dialog = document.querySelector("#item-detail-dialog");
+  if (!dialog) {
+    dialog = document.createElement("dialog");
+    dialog.id = "item-detail-dialog";
+    dialog.className = "item-detail-dialog";
+    dialog.setAttribute("aria-labelledby", "item-detail-title");
+    dialog.innerHTML = '<button class="item-detail-close" type="button" aria-label="Close item details">Close ×</button><div class="item-detail-content" id="item-detail-content"></div>';
+    document.body.appendChild(dialog);
+    dialog.querySelector(".item-detail-close").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  }
+
+  const content = dialog.querySelector("#item-detail-content");
+  content.replaceChildren();
+
+  const visual = document.createElement("div");
+  visual.className = "item-detail-visual";
+  if (item.image) {
+    const image = document.createElement("img");
+    image.src = item.image;
+    image.alt = item.title;
+    visual.appendChild(image);
+  } else {
+    const icon = document.createElement("span");
+    icon.textContent = item.type === "found" ? "🔎" : "📦";
+    visual.appendChild(icon);
+  }
+
+  const details = document.createElement("div");
+  details.className = "item-detail-copy";
+  const type = document.createElement("span");
+  type.className = `tag ${item.type === "found" ? "tag-found" : "tag-lost"}`;
+  type.textContent = item.type === "found" ? "Found item" : "Lost item";
+
+  const title = document.createElement("h1");
+  title.id = "item-detail-title";
+  title.textContent = item.title;
+  const descriptionHeading = document.createElement("h2");
+  descriptionHeading.textContent = "Description";
+  const description = document.createElement("p");
+  description.textContent = item.description || "No description provided.";
+
+  const info = document.createElement("dl");
+  info.className = "item-detail-info";
+  [["Category", item.category], ["Location", item.location], ["Date", item.date ? new Date(`${item.date}T00:00:00`).toLocaleDateString() : "Date unknown"], ["Status", item.status || "Active"]].forEach(([label, value]) => {
+    const row = document.createElement("div");
+    const term = document.createElement("dt");
+    term.textContent = label;
+    const detail = document.createElement("dd");
+    detail.textContent = value;
+    row.append(term, detail);
+    info.appendChild(row);
+  });
+
+  details.append(type, title, info, descriptionHeading, description);
+  content.append(visual, details);
+  if (!dialog.open) dialog.showModal();
+}
+
+function setupItemDetails() {
+  ["#item-grid", "#all-reports-grid"].forEach((selector) => {
+    const grid = document.querySelector(selector);
+    if (!grid) return;
+
+    grid.addEventListener("click", (event) => {
+      if (event.target.closest("button, select, a")) return;
+      const card = event.target.closest(".clickable-item-card");
+      if (card?._itemData) openItemDetails(card._itemData);
+    });
+
+    grid.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const card = event.target.closest(".clickable-item-card");
+      if (!card?._itemData) return;
+      event.preventDefault();
+      openItemDetails(card._itemData);
+    });
+  });
 }
 
 async function loadItems() {
@@ -420,6 +510,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMyReports();
   setupAllReportsPage();
   setupHomeSearch();
+  setupItemDetails();
   loadItems();
   loadMyReports();
 });
