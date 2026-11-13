@@ -141,6 +141,15 @@ app.get("/api/items", async (req, res, next) => {
   }
 });
 
+app.get("/api/my/items", requireAuth, async (req, res, next) => {
+  try {
+    const items = await Item.find({ reportedBy: req.user.sub }).sort({ createdAt: -1 }).lean();
+    res.json(items.map((item) => ({ ...item, id: item._id.toString(), _id: undefined, reportedBy: undefined })));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/items", requireAuth, async (req, res, next) => {
   try {
     const type = String(req.body.type || "");
@@ -161,6 +170,35 @@ app.post("/api/items", requireAuth, async (req, res, next) => {
 
     const item = await Item.create({ title, category, location, date, description, image, type, reportedBy: req.user.sub });
     res.status(201).json({ ...item.toObject(), id: item._id.toString(), _id: undefined, reportedBy: undefined });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch("/api/items/:id/status", requireAuth, async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: "Invalid report ID." });
+    const status = String(req.body.status || "");
+    if (!["Active", "Resolved"].includes(status)) return res.status(400).json({ message: "Choose Active or Resolved." });
+
+    const item = await Item.findOneAndUpdate(
+      { _id: req.params.id, reportedBy: req.user.sub },
+      { $set: { status } },
+      { new: true, runValidators: true }
+    ).lean();
+    if (!item) return res.status(404).json({ message: "Report not found or you do not own it." });
+    res.json({ ...item, id: item._id.toString(), _id: undefined, reportedBy: undefined });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete("/api/items/:id", requireAuth, async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: "Invalid report ID." });
+    const item = await Item.findOneAndDelete({ _id: req.params.id, reportedBy: req.user.sub });
+    if (!item) return res.status(404).json({ message: "Report not found or you do not own it." });
+    res.json({ message: "Report deleted." });
   } catch (error) {
     next(error);
   }

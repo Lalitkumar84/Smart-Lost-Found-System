@@ -131,7 +131,7 @@ function setupWelcomeMessage() {
   if (target && user) target.textContent = `Welcome, ${user.name}!`;
 }
 
-function makeItemCard(item) {
+function makeItemCard(item, options = {}) {
   const card = document.createElement("article");
   card.className = "item-card";
 
@@ -174,6 +174,36 @@ function makeItemCard(item) {
   category.className = "category";
   category.textContent = item.category;
   details.append(titleRow, location, description, category);
+
+  if (options.manage) {
+    const status = document.createElement("span");
+    status.className = `report-status-label ${item.status === "Resolved" ? "is-resolved" : ""}`;
+    status.textContent = item.status || "Active";
+
+    const actions = document.createElement("div");
+    actions.className = "report-actions";
+
+    const statusSelect = document.createElement("select");
+    statusSelect.className = "report-status-select";
+    statusSelect.setAttribute("aria-label", `Update status for ${item.title}`);
+    statusSelect.dataset.itemId = item.id;
+    [["Active", "Active"], ["Resolved", "Resolved"]].forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value === (item.status || "Active") ? `${label} (current)` : label;
+      option.selected = value === (item.status || "Active");
+      statusSelect.appendChild(option);
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "button button-small button-delete-report";
+    deleteButton.type = "button";
+    deleteButton.textContent = "Delete report";
+    deleteButton.dataset.itemId = item.id;
+
+    actions.append(statusSelect, deleteButton);
+    details.append(status, actions);
+  }
   card.append(imageArea, details);
   return card;
 }
@@ -199,6 +229,66 @@ async function loadItems() {
     message.textContent = error.message;
     grid.appendChild(message);
   }
+}
+
+async function loadMyReports() {
+  const grid = document.querySelector("#my-report-grid");
+  const message = document.querySelector("#my-reports-message");
+  if (!grid || !message) return;
+  grid.replaceChildren();
+
+  if (!localStorage.getItem(TOKEN_KEY)) {
+    message.textContent = "Log in to see and manage your reports.";
+    return;
+  }
+
+  message.textContent = "Loading your reports…";
+  try {
+    const items = await apiRequest("/api/my/items");
+    message.textContent = items.length ? "Update a report’s status or delete a report you no longer need." : "You have not submitted any reports yet.";
+    items.forEach((item) => grid.appendChild(makeItemCard(item, { manage: true })));
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+function setupMyReports() {
+  const grid = document.querySelector("#my-report-grid");
+  const message = document.querySelector("#my-reports-message");
+  if (!grid) return;
+
+  grid.addEventListener("change", async (event) => {
+    const select = event.target.closest(".report-status-select");
+    if (!select) return;
+    select.disabled = true;
+    try {
+      await apiRequest(`/api/items/${encodeURIComponent(select.dataset.itemId)}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: select.value })
+      });
+      message.textContent = "Report status updated.";
+      await Promise.all([loadMyReports(), loadItems()]);
+    } catch (error) {
+      message.textContent = error.message;
+      await loadMyReports();
+    }
+  });
+
+  grid.addEventListener("click", async (event) => {
+    const button = event.target.closest(".button-delete-report");
+    if (!button) return;
+    if (!window.confirm("Delete this report? This cannot be undone.")) return;
+
+    button.disabled = true;
+    try {
+      await apiRequest(`/api/items/${encodeURIComponent(button.dataset.itemId)}`, { method: "DELETE" });
+      message.textContent = "Report deleted.";
+      await Promise.all([loadMyReports(), loadItems()]);
+    } catch (error) {
+      message.textContent = error.message;
+      await loadMyReports();
+    }
+  });
 }
 
 function readOptionalImage(file) {
@@ -244,7 +334,7 @@ function setupReportForm() {
       });
       showMessage(form, "Your report was saved to MongoDB.", false);
       form.reset();
-      await loadItems();
+      await Promise.all([loadItems(), loadMyReports()]);
       document.querySelector("#items")?.scrollIntoView({ behavior: "smooth" });
     } catch (error) {
       showMessage(form, error.message || "The report could not be saved.");
@@ -261,5 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAuthNavigation();
   setupWelcomeMessage();
   setupReportForm();
+  setupMyReports();
   loadItems();
+  loadMyReports();
 });

@@ -603,6 +603,57 @@ a {
   padding: 16px;
 }
 
+.reports-message {
+  min-height: 20px;
+  margin: -8px 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.report-status-label {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: #fff2e2;
+  color: #9a5e1f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.report-status-label.is-resolved {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+.report-actions {
+  margin-top: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.report-status-select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.button-delete-report {
+  border-color: #ead6d1;
+  background: white;
+  color: #a64035;
+}
+
+.button-delete-report:hover {
+  background: #fff3f1;
+}
+
 .item-title-row {
   display: flex;
   align-items: baseline;
